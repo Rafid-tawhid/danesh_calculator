@@ -1,4 +1,4 @@
-import 'package:danesh_calculator/calculator_provider.dart';
+import 'package:danesh_calculator/provider/calculator_provider.dart';
 import 'package:danesh_calculator/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Demo',
+      debugShowCheckedModeBanner: false,
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
