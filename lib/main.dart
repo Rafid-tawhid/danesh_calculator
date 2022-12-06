@@ -3,6 +3,8 @@ import 'package:danesh_calculator/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import 'launcher_page.dart';
+
 void main() {
   runApp(MultiProvider(
     providers: [
@@ -23,9 +25,10 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      initialRoute: HomePage.routeName,
+      initialRoute: LauncherPage.routeName,
       routes: {
-        HomePage.routeName:(context)=>HomePage()
+        HomePage.routeName:(context)=>HomePage(),
+        LauncherPage.routeName:(context)=>LauncherPage(),
       },
     );
   }

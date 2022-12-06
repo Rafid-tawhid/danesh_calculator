@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 class CalculatorProvider extends ChangeNotifier{
 List<CountryModels> countryInfoList=[];
 List<CountryModels> countryInfoList2=[];
+List<CountryModels> featuredcountryInfo=[];
+CountryMarginRate? minMaxofCountry;
 List<String> countryNameList=[];
 List<Facilities> countryFacilitiesList=[];
 List<CountryMarginRate> countryCurrencyList=[];
@@ -19,12 +21,16 @@ Future<List<CountryModels>> getAllCountryInfo() async{
   if(callOnce){
     countryInfoList.clear();
     countryInfoList2.clear();
-    countryNameList.clear();
+    // countryNameList.clear();
+    featuredcountryInfo.clear();
     countryInfoList=await APICalls.getAllCountriesInfo();
     countryInfoList.forEach((element) {
       if(element.status=='1'){
         countryNameList.add(element.name!);
         countryInfoList2.add(element);
+        if(element.featured=="1"){
+          featuredcountryInfo.add(element);
+        }
       }
     });
 
@@ -45,6 +51,7 @@ List<Facilities> getAllFacilitiesByCountryName(String name) {
     }
   });
   print('countryInfoList ${countryInfoList.length}');
+  notifyListeners();
   return countryFacilitiesList;
 }
 
@@ -58,8 +65,24 @@ Future<List<CountryMarginRate>> getCurrencyByCountryName(String name) async{
       countryCurrencyList2.add(element);
     }
   });
+  notifyListeners();
   print('countryCurrencyList ${countryCurrencyList.length}');
   return countryCurrencyList;
+}
+
+
+
+Future<CountryMarginRate?> getMinAndMaxRateByCountryTblId(String country_id,String service) async{
+
+  var allCountryRate=await APICalls.getAllCountriesCurrency();
+  allCountryRate.forEach((element) {
+    if(element.countryTableId==country_id&&element.serviceName==service){
+      minMaxofCountry=element;
+    }
+  });
+  notifyListeners();
+
+  return minMaxofCountry;
 }
 
 double getCurrencyRateByCountryName(String name) {
@@ -70,6 +93,7 @@ double getCurrencyRateByCountryName(String name) {
      currencyRate=  double.parse(element.finalRate!);
    }
  });
+ notifyListeners();
   return currencyRate;
 }
 
@@ -81,8 +105,14 @@ String getCurrencyNameCountryName(String name) {
       currencyName=element.currency!;
     }
   });
+  notifyListeners();
   return currencyName;
 }
+
+
+
+Future<Map<String, dynamic>> getRateByCountryId(amount,country_id,service_id)=>
+    APICalls.getRateByCountryId(amount, country_id, service_id);
 
 
 
