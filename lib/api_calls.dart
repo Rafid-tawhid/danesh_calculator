@@ -8,6 +8,7 @@ import 'package:http/http.dart';
 class APICalls{
 
   static List<CountryModels> countryInfoList=[];
+  static List<CountryModels> firstcountry=[];
   static List<CountryMarginRate> countryCourencyRateList=[];
 
   static Future<List<CountryModels>> getAllCountriesInfo() async{
@@ -58,6 +59,18 @@ class APICalls{
     }
 
     return data;
+  }
+
+  static Future<CountryModels> getFirstCountryByName(String name) async {
+    final response=await http.get(Uri.parse('http://remit.daneshexchange.com/staging/api/country'));
+    var data=jsonDecode(response.body.toString());
+    for(Map map in data){
+      if(map['name']==name){
+        firstcountry.add(CountryModels.fromJson(map));
+      }
+    }
+
+    return firstcountry.first;
   }
 
 

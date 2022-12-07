@@ -41,7 +41,7 @@ dependencies:
   dropdown_search: ^5.0.3
   type_ahead_text_field:
   flutter_svg:
-  easy_loading:
+  flutter_easyloading: ^3.0.5
 
 dev_dependencies:
   flutter_test:

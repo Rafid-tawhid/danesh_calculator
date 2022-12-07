@@ -2,15 +2,15 @@ import 'package:danesh_calculator/provider/calculator_provider.dart';
 import 'package:danesh_calculator/home_page.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-
 import 'launcher_page.dart';
-
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 void main() {
   runApp(MultiProvider(
     providers: [
       ChangeNotifierProvider(create: (context)=>CalculatorProvider()),
     ],
-      child: MyApp()));
+      child: MyApp(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
@@ -25,6 +25,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
+      builder: EasyLoading.init(),
       initialRoute: LauncherPage.routeName,
       routes: {
         HomePage.routeName:(context)=>HomePage(),

@@ -85,12 +85,12 @@ Future<CountryMarginRate?> getMinAndMaxRateByCountryTblId(String country_id,Stri
   return minMaxofCountry;
 }
 
-double getCurrencyRateByCountryName(String name) {
-
+double getCurrencyRateByCountryNameServiceCurrency(String name,String serviceName,String currency) {
   double currencyRate=0.0;
  countryCurrencyList.forEach((element){
-   if(element.country==name){
+   if(element.country==name&&element.serviceName==serviceName&&element.currency==currency){
      currencyRate=  double.parse(element.finalRate!);
+     notifyListeners();
    }
  });
  notifyListeners();

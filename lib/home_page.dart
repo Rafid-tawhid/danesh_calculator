@@ -1,9 +1,10 @@
 import 'package:danesh_calculator/api_calls.dart';
 import 'package:danesh_calculator/provider/calculator_provider.dart';
 import 'package:danesh_calculator/models/country_models.dart';
-import 'package:danesh_calculator/utils.dart';
+import 'package:danesh_calculator/utils/utils.dart';
 import 'package:dropdown_search/dropdown_search.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_easyloading/flutter_easyloading.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:provider/provider.dart';
 
@@ -21,31 +22,44 @@ class _HomePageState extends State<HomePage> {
   CountryModels? _country;
   // late CalculatorProvider provider;
   Facilities? selectService;
-  double final_rate = 3.0279;
+  double? final_rate;
   double rate = 1.0;
-  String curencyName = 'MYR';
+  String curencyName = 'GBP';
   double totallCost = 0.00;
   String fees = '0.00';
+  double? initialRate ;
+  String? initialService;
+  String? initialCurrency;
   String maxLimit = '0.00';
   String minLimit = '0.00';
   String countryName = 'Malaysia';
   CountryMarginRate? countryMarginRate;
 
-  bool showMax=false;
-  bool showMin=false;
+  bool showMax = false;
+  bool showMin = false;
+  bool callOnce=true;
 
   final myController = TextEditingController();
   final myController2 = TextEditingController();
-  var img =
-      'https://remit.daneshexchange.com/staging/assets/uploads/country/6347faed94d991665661677.jpg';
+  var img = 'https://remit.daneshexchange.com/staging/assets/uploads/country/6347faed94d991665661677.jpg';
+
+
   @override
   void didChangeDependencies() {
-    // provider=Provider.of<CalculatorProvider>(context,listen: true);
-    // provider.getAllCountryInfo().then((value) {
-    //   _country=value.first;
-    // });
-    //
-    // print(_country.toString());
+    if(callOnce){
+      // APICalls.getFirstCountryByName("Malaysia").then((value) {
+      //   setState(() {
+      //     initialRate=double.parse('${value.rate}');
+      //     initialService=value.facilities!.first!.name;
+      //     initialCurrency=value.code;
+      //     final_rate=double.parse(initialCurrency!);
+      //     // curencyName=value.code!;
+      //   });
+      //   print('$initialCurrency$initialRate!$initialService!');
+      // });
+      callOnce=false;
+    }
+
     super.didChangeDependencies();
   }
 
@@ -124,10 +138,11 @@ class _HomePageState extends State<HomePage> {
                         Container(
                             height: 40,
                             decoration: BoxDecoration(
-                                color: Colors.grey.shade300,
-                                borderRadius: BorderRadius.circular(6),
-                                border:
-                                    Border.all(color: Colors.black, width: 2)),
+                              color: Colors.grey.shade300,
+                              borderRadius: BorderRadius.circular(6),
+                              // border:
+                              //     Border.all(color: Colors.black, width: 2)
+                            ),
                             child: Row(
                               children: [
                                 Container(
@@ -138,67 +153,94 @@ class _HomePageState extends State<HomePage> {
                                   width: 35,
                                   padding: const EdgeInsets.only(
                                       top: 10.0, bottom: 10, left: 6, right: 6),
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.only(
+                                          topLeft: Radius.circular(8),
+                                          bottomLeft: Radius.circular(8)),
+                                      color: Color(0xffD9D9D9)),
                                 ),
                                 Expanded(
-                                  child: DropdownSearch<CountryModels>(
-                                    selectedItem: _country,
-                                    onChanged: (value) {
-                                      selectService = null;
-                                      countryMarginRate = null;
-                                      setState(() {
-                                        _country = value;
-                                        img = _country!.flag!;
-                                        countryName = value!.name!;
-                                        print(provider
-                                            .getAllFacilitiesByCountryName(
-                                                _country!.name!));
-                                        provider.getCurrencyByCountryName(
-                                            _country!.name!);
-                                      });
-                                    },
-                                    items: provider.countryInfoList2,
-                                    dropdownDecoratorProps:
-                                        DropDownDecoratorProps(
-                                      dropdownSearchDecoration: InputDecoration(
-                                        labelText: countryName,
+                                  child: Container(
+                                    child: DropdownSearch<CountryModels>(
+                                      selectedItem: _country,
+                                      onChanged: (value) {
+                                        selectService = null;
+                                        countryMarginRate = null;
+                                        initialRate=null;
+                                        initialCurrency=null;
+                                        initialCurrency=null;
+                                        setState(() {
+                                          _country = value;
+                                          img = _country!.flag!;
+                                          countryName = value!.name!;
 
-                                        filled: true,
-                                      ),
-                                    ),
-                                    popupProps: PopupProps.menu(
-                                      showSearchBox: true,
-                                      itemBuilder: (context, item, isSelected) {
-                                        return ListTile(
-                                          title: Text(item.name!),
-                                          leading: Padding(
-                                            padding: const EdgeInsets.only(
-                                                top: 4.0, bottom: 4),
-                                            child: Image.network(item.flag!),
-                                          ),
-                                        );
+                                          print(provider
+                                              .getAllFacilitiesByCountryName(
+                                                  _country!.name!));
+                                          provider.getCurrencyByCountryName(
+                                              _country!.name!);
+                                        });
                                       },
-                                      showSelectedItems: false,
+                                      items: provider.countryInfoList2,
+                                      dropdownDecoratorProps:
+                                          DropDownDecoratorProps(
+                                        dropdownSearchDecoration:
+                                            InputDecoration(
+                                          labelText: countryName,
+                                          // enabledBorder: OutlineInputBorder(
+                                          //     borderRadius: BorderRadius.circular(6),
+                                          //     borderSide: BorderSide(color: Colors.grey.shade300,),
+                                          // ),
+                                              enabledBorder: InputBorder.none,
+                                                 filled: true,
+                                              hintText: countryName,
+                                        ),
+                                      ),
+                                      popupProps: PopupProps.menu(
+                                        showSearchBox: true,
+                                        itemBuilder:
+                                            (context, item, isSelected) {
+                                          return ListTile(
+                                            title: Text(item.name!),
+                                            leading: Padding(
+                                              padding: const EdgeInsets.only(
+                                                  top: 4.0, bottom: 4),
+                                              child: Image.network(item.flag!),
+                                            ),
+                                          );
+                                        },
+                                        showSelectedItems: false,
+                                      ),
                                     ),
                                   ),
                                 ),
                               ],
                             )),
                         SizedBox(
-                          height: 10,
+                          height: 15,
+                        ),
+                        Text(
+                          'Select Service',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        SizedBox(
+                          height: 5,
                         ),
                         Container(
                           padding: const EdgeInsets.only(
                               top: 7.0, bottom: 7, left: 6, right: 6),
                           decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
-                              borderRadius: BorderRadius.circular(6),
-                              border:
-                                  Border.all(color: Colors.black, width: 2)),
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(6),
+                            // border:
+                            //     Border.all(color: Colors.black, width: 2)
+                          ),
                           child: DropdownButtonFormField<Facilities>(
+
                             decoration: InputDecoration.collapsed(
                               hintText: '',
                             ),
-                            hint: const Text('Select Service'),
+                            hint:  initialService==null?Text('Select Service'):Text('$initialService'),
                             value: selectService,
                             isExpanded: true,
                             validator: (value) {
@@ -216,26 +258,38 @@ class _HomePageState extends State<HomePage> {
                               setState(() {
                                 selectService = value;
                                 countryMarginRate = null;
+                                myController.clear();
+                                myController2.clear();
+                                final_rate==0.0;
                               });
                             },
+
                           ),
                         ),
                         SizedBox(
-                          height: 10,
+                          height: 15,
+                        ),
+                        Text(
+                          'Select Currency',
+                          style: TextStyle(fontSize: 12, color: Colors.grey),
+                        ),
+                        SizedBox(
+                          height: 5,
                         ),
                         Container(
                           padding: const EdgeInsets.only(
                               top: 7.0, bottom: 7, left: 6, right: 6),
                           decoration: BoxDecoration(
-                              color: Colors.grey.shade300,
-                              borderRadius: BorderRadius.circular(6),
-                              border:
-                                  Border.all(color: Colors.black, width: 2)),
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(6),
+                            // border:
+                            //     Border.all(color: Colors.black, width: 2),
+                          ),
                           child: DropdownButtonFormField<CountryMarginRate>(
                             decoration: InputDecoration.collapsed(
                               hintText: '',
                             ),
-                            hint: const Text('Select Currency'),
+                            hint: initialCurrency==null?Text('Select Currency'):Text('$initialCurrency'),
                             value: countryMarginRate,
                             isExpanded: true,
                             validator: (value) {
@@ -253,13 +307,15 @@ class _HomePageState extends State<HomePage> {
                               setState(() {
                                 countryMarginRate = value;
                                 final_rate =
-                                    provider.getCurrencyRateByCountryName(
-                                        _country!.name!);
+                                    provider.getCurrencyRateByCountryNameServiceCurrency(
+                                        _country!.name!,selectService!.name!,countryMarginRate!.currency!);
                                 curencyName =
                                     provider.getCurrencyNameCountryName(
                                         _country!.name!);
                                 // myController.text=3000.toString();
-                                myController.text == null;
+                                myController.text=3000.toString();
+                                myController2.text=(final_rate!*3000).toString();
+
                               });
                             },
                           ),
@@ -272,16 +328,14 @@ class _HomePageState extends State<HomePage> {
                                 text: '1 AUD =',
                                 children: [
                                   TextSpan(
-                                      text: ' $final_rate',
+                                      text: ' $final_rate ',
                                       style: TextStyle(color: Colors.black)),
                                   TextSpan(
-                                      text: ' MYR',
+                                      text: curencyName,
                                       style: TextStyle(color: Colors.grey))
                                 ]),
                           ),
                         ),
-
-
                         SizedBox(
                           height: 20,
                         ),
@@ -290,152 +344,200 @@ class _HomePageState extends State<HomePage> {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Expanded(
-                                child: Container(
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        child: Flexible(
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 10.0),
-                                            child: TextField(
-                                              decoration: InputDecoration(
-                                                  border: InputBorder.none),
-                                              controller: myController,
-                                              keyboardType:
-                                                  TextInputType.number,
-                                              onChanged: (value) async{
-                                                rate = double.parse(value) *
-                                                    final_rate;
-                                                myController2.text =
-                                                    rate.toStringAsFixed(2);
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('You send',style: TextStyle(
+                                        fontSize: 12, color: Colors.grey.shade600),),
+                                    SizedBox(height: 5,),
+                                    Container(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            child: Flexible(
+                                              child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 10.0),
+                                                child: TextField(
+                                                  decoration: InputDecoration(
+                                                      border: InputBorder.none),
+                                                  controller: myController,
+                                                  keyboardType:
+                                                      TextInputType.number,
+                                                  onChanged: (value) async {
+                                                    rate = double.parse(value) *
+                                                        final_rate!;
+                                                    myController2.text =
+                                                        rate.toStringAsFixed(2);
+                                                    // EasyLoading.show();
+                                                    await provider
+                                                        .getRateByCountryId(
+                                                            myController.text,
+                                                            countryMarginRate!
+                                                                .currencyId
+                                                                .toString(),
+                                                        countryMarginRate!.serviceId.toString())
+                                                        .then((value) {
+                                                      print(value['single_fee']);
+                                                      print(myController.text+countryMarginRate!.currencyId
+                                                          .toString()+countryMarginRate!.serviceId!);
 
-                                            await  provider
-                                                    .getRateByCountryId(
-                                                        myController.text,
-                                                        countryMarginRate!
-                                                            .currencyId
-                                                            .toString(),
-                                                        '3')
-                                                    .then((value) {
-                                                  print(value['single_fee']);
-                                                  setState(() {
-                                                    fees = value['single_fee'];
-                                                    totallCost = double.parse(
-                                                            fees) +
-                                                        double.parse(
-                                                            myController.text);
-                                                  });
-                                                });
-                                              await  provider.getMinAndMaxRateByCountryTblId(
-                                                    countryMarginRate!.countryTableId.toString(),
-                                                    countryMarginRate!.serviceName.toString()).then((value){
-                                                     if(double.parse(value!.maximumLimit!)<double.parse(myController.text)){
-                                                       setState(() {
-                                                         maxLimit= value!.maximumLimit!;
-                                                         print('maxLimit ${value!.maximumLimit!}');
-                                                         showMax=true;
-                                                         showMin=false;
-                                                       });
-                                                     }
-                                                     else{ minLimit= value!.minimumLimit!;
-                                                       setState(() {
+                                                      setState(() {
+                                                        fees = value['single_fee'];
+                                                        totallCost = double.parse(
+                                                                fees) +
+                                                            double.parse(
+                                                                myController.text);
+                                                      });
+                                                    });
+                                                    await provider
+                                                        .getMinAndMaxRateByCountryTblId(
+                                                            countryMarginRate!
+                                                                .countryTableId
+                                                                .toString(),
+                                                            countryMarginRate!
+                                                                .serviceName
+                                                                .toString())
+                                                        .then((value) {
+                                                      if (double.parse(value!
+                                                              .maximumLimit!) <
+                                                          double.parse(
+                                                              myController.text)) {
+                                                        setState(() {
+                                                          maxLimit =
+                                                              value!.maximumLimit!;
+                                                          print(
+                                                              'maxLimit ${value!.maximumLimit!}');
+                                                          showMax = true;
+                                                          showMin = false;
+                                                        });
+                                                      } else {
+                                                        minLimit =
+                                                            value!.minimumLimit!;
+                                                        setState(() {
+                                                          print(
+                                                              'minLimit $minLimit');
+                                                          showMin = true;
+                                                          showMax = false;
+                                                        });
+                                                      }
 
-                                                        print('minLimit $minLimit');
-                                                        showMin=true;
-                                                        showMax=false;
-                                                       });
-                                                     }
-                                                });
-
-                                              },
+                                                      // EasyLoading.dismiss();
+                                                    });
+                                                  },
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(4.0),
+                                            child: Container(
+                                              height: 40,
+                                              width: 2,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(4.0),
+                                            child: Text(
+                                              'AUD',
+                                              style: TextStyle(fontSize: 20),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(4.0),
-                                        child: Container(
-                                          height: 40,
-                                          width: 2,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(4.0),
-                                        child: Text(
-                                          'AUD',
-                                          style: TextStyle(fontSize: 20),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(6),
-                                      color: Colors.grey.shade300),
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(6),
+                                          color: Colors.grey.shade300),
+                                    ),
+                                  ],
                                 ),
                               ),
                               SizedBox(
                                 width: 20,
                               ),
                               Expanded(
-                                child: Container(
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      Container(
-                                        child: Flexible(
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                left: 10.0),
-                                            child: TextField(
-                                              decoration: InputDecoration(
-                                                  border: InputBorder.none),
-                                              controller: myController2,
-                                              onChanged: (value) {
-                                                rate = double.parse(value) /
-                                                    final_rate;
-                                                myController.text =
-                                                    rate.toStringAsFixed(2);
-                                              },
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Text('Receiver gets',style: TextStyle(
+                                        fontSize: 12, color: Colors.grey.shade600),),
+                                    SizedBox(height: 5,),
+                                    Container(
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          Container(
+                                            child: Flexible(
+                                              child: Padding(
+                                                padding: const EdgeInsets.only(
+                                                    left: 10.0),
+                                                child: TextField(
+                                                  keyboardType:
+                                                  TextInputType.number,
+                                                  decoration: InputDecoration(
+                                                      border: InputBorder.none),
+                                                  controller: myController2,
+
+                                                  onChanged: (value) {
+                                                    rate = double.parse(value) /
+                                                        final_rate!;
+                                                    myController.text =
+                                                        rate.toStringAsFixed(2);
+                                                  },
+                                                ),
+                                              ),
                                             ),
                                           ),
-                                        ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(4.0),
+                                            child: Container(
+                                              height: 40,
+                                              width: 2,
+                                              color: Colors.grey,
+                                            ),
+                                          ),
+                                          Padding(
+                                            padding: const EdgeInsets.all(4.0),
+                                            child: Text(
+                                              curencyName,
+                                              style: TextStyle(fontSize: 20),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(4.0),
-                                        child: Container(
-                                          height: 40,
-                                          width: 2,
-                                          color: Colors.grey,
-                                        ),
-                                      ),
-                                      Padding(
-                                        padding: const EdgeInsets.all(4.0),
-                                        child: Text(
-                                          curencyName,
-                                          style: TextStyle(fontSize: 20),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                  decoration: BoxDecoration(
-                                      borderRadius: BorderRadius.circular(6),
-                                      color: Colors.grey.shade300),
+                                      decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(6),
+                                          color: Colors.grey.shade300),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ],
                           ),
                         ),
+                        SizedBox(
+                          height: 5,
+                        ),
                         Stack(
                           children: [
-                           if(showMax) Text('Maximum Limit: $maxLimit $curencyName',style: TextStyle(color: Colors.red),),
-                            if(showMin)Text('Minimum Limit: $minLimit $curencyName',style: TextStyle(color: Colors.red),),
+                            if (showMax)
+                              Text(
+                                'Maximum Limit: $maxLimit $curencyName',
+                                style: TextStyle(color: Colors.red),
+                              ),
+                            if (showMin)
+                              Text(
+                                'Minimum Limit: $minLimit $curencyName',
+                                style: TextStyle(color: Colors.red),
+                              ),
                           ],
                         ),
                         SizedBox(
-                          height: 40,
+                          height: 30,
                         ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -456,7 +558,8 @@ class _HomePageState extends State<HomePage> {
                         ),
                         Align(
                           child: ElevatedButton(
-                              onPressed: () {}, child: Text('Send now')),
+                              onPressed: () {
+                              }, child: Text('Send now')),
                           alignment: Alignment.center,
                         ),
                         SizedBox(
@@ -464,7 +567,14 @@ class _HomePageState extends State<HomePage> {
                         ),
                         Align(
                           child: ElevatedButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              myController.clear();
+                              myController2.clear();
+                              setState(() {
+                                fees==0.00;
+                                totallCost==0.00;
+                              });
+                            },
                             child: Text('Clear items'),
                             style: ElevatedButton.styleFrom(
                                 backgroundColor: Colors.black),
@@ -492,33 +602,33 @@ class _HomePageState extends State<HomePage> {
                         Container(
                           height: 80,
                           color: Colors.white.withOpacity(.5),
-                          child: ListView.builder(scrollDirection: Axis.horizontal,
-                            itemCount: provider.featuredcountryInfo.length,
-                            itemBuilder: (context, index) {
-                              var country=provider.featuredcountryInfo[index];
-                              return Container(
-                                padding: EdgeInsets.all(5),
-                                child: Column(
-                                  children: [
-                                    Image.network(
-                                      country.flag!,
-                                      height: 35,
-                                      width: 40,
-                                      fit: BoxFit.cover,
-                                    ),
-                                    SizedBox(
-                                      height: 5,
-                                    ),
-                                    Text(
-                                      country.name!,
-                                      style: TextStyle(fontSize: 12),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            }
-                          ),
-
+                          child: ListView.builder(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: provider.featuredcountryInfo.length,
+                              itemBuilder: (context, index) {
+                                var country =
+                                    provider.featuredcountryInfo[index];
+                                return Container(
+                                  padding: EdgeInsets.all(5),
+                                  child: Column(
+                                    children: [
+                                      Image.network(
+                                        country.flag!,
+                                        height: 35,
+                                        width: 40,
+                                        fit: BoxFit.cover,
+                                      ),
+                                      SizedBox(
+                                        height: 5,
+                                      ),
+                                      Text(
+                                        country.name!,
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              }),
                         ),
                       ],
                     );
